@@ -1,0 +1,9 @@
+.vagrant
+._*
+bin/
+include/
+lib/
+local/
+*.retry
+*.log
+vbox_host.cfg

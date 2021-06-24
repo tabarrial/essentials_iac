@@ -1,0 +1,8 @@
+---
+- name: PLAYBOOK 1 changed_when sample
+  hosts: myServer
+  tasks:
+    - name: Install dependencies via Composer.
+      command: "/usr/local/bin/composer global require phpunit/phpunit --prefer-dist"
+      register: composer
+      changed_when: "'Nothing to install or update' not in composer.stdout"

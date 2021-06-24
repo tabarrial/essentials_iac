@@ -1,0 +1,12 @@
+---
+- name: Playbook debugger troubleshooting
+  hosts: myServer
+  debugger: on_failed
+  vars:
+    app_version: 1.2
+  tasks:
+    - name: Show the installed app version
+      debug:
+        msg: "Version {{ app_version }} installed"
+      failed_when: app_version < 2
+...

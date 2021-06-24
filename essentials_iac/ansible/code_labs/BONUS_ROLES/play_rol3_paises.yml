@@ -1,0 +1,5 @@
+---
+- name: PLAYBOOK rol3
+  hosts: aws
+  roles:
+    - { role: rol3_paises }

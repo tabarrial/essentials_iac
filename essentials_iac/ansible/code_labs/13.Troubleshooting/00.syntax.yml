@@ -1,0 +1,9 @@
+---
+- name: Syntax troubleshooting
+  hosts: myServer
+  vars:
+    app_path: "/tmp/{{ ansible_user }}/app"
+  tasks:
+  - name: Show message
+    debug:
+      msg: "App was installed here: {{ app_path }}"

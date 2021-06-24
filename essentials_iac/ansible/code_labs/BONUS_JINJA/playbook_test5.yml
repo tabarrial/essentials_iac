@@ -1,0 +1,10 @@
+---
+- name: PLAYBOOK para el caso 5
+  hosts: myServer
+  vars_files:
+    - vars/test5_vars.yml
+  tasks:
+    - name: Genera archivo JINJA2
+      template:
+        src: templates/test5.j2
+        dest: /home/formacion/ansible-deep-dive-student/BONUS_JINJA/files_generated/file_test5.conf

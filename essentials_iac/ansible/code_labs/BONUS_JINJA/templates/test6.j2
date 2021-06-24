@@ -1,0 +1,11 @@
+{% if routing_protocol == 'bgp' -%}
+router bgp {{ bgp.as }}
+  router-id {{ interfaces.Loopback0.ip }}
+  network {{ interfaces.Loopback0.ip }}/{{ interfaces.Loopback0.mask }}
+{%- elif routing_protocol == 'ospf' -%}
+router ospf {{ ospf.pid }}
+  router-id {{ interfaces.Loopback0.ip }}
+  network {{ interfaces.Loopback0.ip }}/{{ interfaces.Loopback0.mask }} area 0
+{%- else -%}
+  ip route 0.0.0.0/0 {{ default_nh }}
+{%- endif %}

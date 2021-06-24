@@ -1,0 +1,6 @@
+---
+- name: PLAYBOOK dar de alta usuario
+  hosts: aws
+  become: yes
+  roles:
+    - { role: rol_alta_user, usuario: paco, pass: pass123 }

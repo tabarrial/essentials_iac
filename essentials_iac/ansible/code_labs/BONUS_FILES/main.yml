@@ -1,0 +1,33 @@
+---
+- name: PLAYBOOK bonus files
+  hosts: myServer
+  become: yes
+  tasks:
+    - name: Touch a file and set permissions
+      file:
+        path: /tmp/touch_file
+        owner: formacion
+        group: formacion
+        mode: 0640
+        state: touch
+
+    - name: Añado una linea a /etc/motd
+      lineinfile:
+        path: /etc/motd
+        line: '¡¡ Bienvenido a los laboratorios de Ansible Deep Dive !!'
+        state: present
+
+    - name: Añade un bloque de lineas a /etc/motd
+      blockinfile:
+        path: /etc/motd
+        marker: ""
+        block: |
+          ===========================================================
+          Estas entrando en el sistema de alberto
+
+    - name: Recuperamos informacion del directorio /tmp
+      stat: path=/tmp
+      register: resultado
+
+    - name: Muestra el resultado
+      debug: var=resultado

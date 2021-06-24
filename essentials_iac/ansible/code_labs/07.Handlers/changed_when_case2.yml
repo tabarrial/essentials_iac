@@ -1,0 +1,13 @@
+---
+- name: PLAYBOOK 2 changed_when sample
+  hosts: myServer
+  tasks:
+  - name: "Start the Apache HTTPD Server"
+    become: true
+    become_user: root
+    shell: "httpd -k start"
+    register: starthttpdout
+    changed_when: "'already running' not in starthttpdout.stdout"
+
+  - debug:
+      msg: "{{starthttpdout.stdout}}"

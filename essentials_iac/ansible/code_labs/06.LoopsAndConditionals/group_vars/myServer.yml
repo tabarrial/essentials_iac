@@ -1,0 +1,10 @@
+---
+user_list:
+  - name: John Davis
+    username: jdavis
+    groups: wheel
+  - name: Jennifer Smith
+    username: jsmith
+    groups: wheel
+...
+

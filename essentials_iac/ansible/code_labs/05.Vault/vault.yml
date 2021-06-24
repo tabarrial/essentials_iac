@@ -1,0 +1,12 @@
+---
+- name: Configurar usuario
+  hosts: myServer
+  become: true
+  vars_files:
+    data.yml
+  tasks:
+    - name: Crear usuario
+      user:
+        name: "{{ username }}"
+        password: "{{ contrasena | password_hash('sha512') }}"
+...

@@ -1,0 +1,45 @@
+- name: Using Handlers
+  hosts: myServer
+  become: true
+  ## Fuerza los handlers pero no continua la play si una tarea falla.
+  ## force_handlers: yes
+  tasks:
+    - name: Copy sshd_config
+      copy:
+        src: files/sshd_config
+        dest: /etc/ssh/sshd_config
+        mode: 0600
+        owner: root
+        group: root
+      notify:
+        - restart_sshd
+
+    - name: Copy index.html file
+      copy:
+        src: files/index.html
+        dest: /var/www/html/index.html
+      notify:
+        - restart_httpd
+        - restart_sshd
+
+    ## Añadir posteriormente esta tarea para ver el ignore errors
+    - name: fail task!
+      fail:
+        msg: Oh no! I Failed!
+      ignore_errors: True
+
+    ## Podemos poner esta tarea despues para ver la diferencia entre handlers e ignore_errors
+    - name: Mostrar mensaje
+      debug:
+        msg: "Esto es un mensaje"
+
+  handlers:
+    - name: restart_sshd
+      service:
+        name: sshd
+        state: restarted
+
+    - name: restart_httpd
+      service:
+        name: httpd
+        state: restarted

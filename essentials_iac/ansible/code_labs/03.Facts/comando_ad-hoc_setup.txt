@@ -1,0 +1,1 @@
+ansible myServer -m setup -a "filter=ansible_hostname"

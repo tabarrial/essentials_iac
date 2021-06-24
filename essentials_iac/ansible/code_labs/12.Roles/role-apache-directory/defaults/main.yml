@@ -1,0 +1,6 @@
+---
+# defaults file for role-apache-directory
+mirror_url: "http://apache.rediris.es/"
+temp_dir: "/tmp"
+ads_version: "2.0.0.AM25"
+jre_package: "java-1.8.0-openjdk"

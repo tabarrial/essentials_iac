@@ -1,0 +1,22 @@
+---
+ - name: Bloques Ansible
+   hosts: myServer
+   gather_facts: false
+
+   tasks:
+     - block:
+        - name: Listo mi home
+          command: "ls -l /home/formacion"
+
+        - name: Fallo de forma intencionada
+          command: "ls -l /tmp/calle-falsa-123"
+
+       rescue:
+        - name: Rescue block
+          debug:
+            msg: "Entro en Rescue siempre que falle mi bloque"
+
+       always:
+        - name: Clausula always
+          debug:
+            msg: "Yo siempre me ejecuto"

@@ -1,0 +1,427 @@
+---
+
+- name: Fail if Ansible is old
+  fail: msg="We need updates in Ansible 2.5.0. Please update your kit. 'pip install -U Ansible'"
+  when: ansible_version.full is version('2.5.0', '<')
+
+- name: Fail if no plone initial password set
+  fail: msg="You must set the plone_initial_password variable."
+  when: not instance_config.plone_initial_password
+
+- name: Set convenience variables
+  set_fact:
+    plone_instance_home: "{{ instance_config.plone_target_path }}/{{ instance_config.plone_instance_name }}"
+    plone_instance_var_path: "{{ instance_config.plone_var_path }}/{{ instance_config.plone_instance_name }}"
+    plone_instance_backup_path: "{{ instance_config.plone_backup_path|default(instance_config.plone_var_path, true) }}/{{ instance_config.plone_instance_name }}"
+    supervisor_instance_discriminator: "{{ '%s_' % instance_config.plone_instance_name }}"
+    plone_python_version: "{{ instance_config.plone_python_version }}"
+    plone_python_major_version: "{{ instance_config.plone_python_version.split('.')[0] }}"
+    plone_pip_version: "{{ instance_config.plone_pip_version }}"
+    plone_setuptools_version: "{{ instance_config.plone_setuptools_version }}"
+    plone_zc_buildout_version: "{{ instance_config.plone_zc_buildout_version }}"
+
+
+###################################
+# Prerequisites
+
+- include: "{{ ansible_os_family }}.yml"
+
+###################################
+# Users and groups
+
+- name: Ensure plone group
+  group: name={{ instance_config.plone_group }}
+
+- name: Ensure plone buildout user
+  user:
+    name={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+    generate_ssh_key=yes
+
+- name: Ensure plone daemon user
+  user:
+    name={{ instance_config.plone_daemon_user }}
+    group={{ instance_config.plone_group }}
+
+
+####################################
+# Directory structure and virtualenv
+
+- name: Ensure base directory
+  file:
+    path={{ instance_config.plone_target_path }}
+    state=directory
+    mode=0755
+
+- name: Instance var base directory
+  file:
+    path={{ instance_config.plone_var_path }}
+    state=directory
+    mode=0755
+
+- name: Check for existence of buildout cache
+  stat: path="{{ instance_config.plone_target_path }}/buildout-cache"
+  register: cache_stat
+
+- name: Load buildout cache from host file
+  when: instance_config.plone_buildout_cache_file and not cache_stat.stat.exists
+  unarchive:
+    creates="{{ instance_config.plone_target_path }}/buildout-cache"
+    src="{{ instance_config.plone_buildout_cache_file }}"
+    dest="{{ instance_config.plone_target_path }}"
+    owner="{{ instance_config.plone_buildout_user }}"
+    group="{{ instance_config.plone_group }}"
+  register: copied_cache
+
+- name: Download buildout cache if needed
+  when: instance_config.plone_buildout_cache_url and not
+    (instance_config.plone_buildout_cache_file or cache_stat.stat.exists)
+  unarchive:
+    copy: no
+    src: "{{ instance_config.plone_buildout_cache_url }}"
+    dest: "{{ instance_config.plone_target_path }}"
+    owner: "{{ instance_config.plone_buildout_user }}"
+    group: "{{ instance_config.plone_group }}"
+  ignore_errors: yes
+  register: downloaded_cache
+
+- name: Buildout cache directory exists and is owned by plone buildout user
+  file:
+    path={{ instance_config.plone_target_path }}/buildout-cache
+    state=directory
+    owner={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+
+- name: Buildout cache eggs directory
+  file:
+    path={{ instance_config.plone_target_path }}/buildout-cache/eggs
+    state=directory
+    owner={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+
+- name: Fix file ownership in cache
+  when: copied_cache.changed or downloaded_cache.changed
+  file:
+    path={{ instance_config.plone_target_path }}/buildout-cache
+    owner={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+    recurse=yes
+
+- name: Buildout cache downloads directory
+  file:
+    path={{ instance_config.plone_target_path }}/buildout-cache/downloads
+    state=directory
+    owner={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+
+- name: Instance directory
+  file:
+    path={{ plone_instance_home }}
+    state=directory
+    owner={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+
+- name: Copy buildout skeleton
+  when: (instance_config.plone_buildout_git_repo is not defined) or not (instance_config.plone_buildout_git_repo)
+  copy:
+    src=zeocluster/
+    dest={{ plone_instance_home }}
+    owner={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+
+- name: Instance directory via git
+  when: (instance_config.plone_buildout_git_repo is defined) and (instance_config.plone_buildout_git_repo)
+  git:
+    repo={{ instance_config.plone_buildout_git_repo }}
+    force=no
+    dest={{ plone_instance_home }}
+    version={{ instance_config.plone_buildout_git_version | default('HEAD') }}
+    accept_hostkey=yes
+  become_user: "{{ instance_config.plone_buildout_user }}"
+
+- name: Instance var directory
+  file:
+    path={{ plone_instance_var_path }}
+    state=directory
+    owner={{ instance_config.plone_daemon_user }}
+    group={{ instance_config.plone_group }}
+    mode=02770
+
+- name: Instance backup directory
+  when: plone_instance_var_path != plone_instance_backup_path
+  file:
+    path="{{ plone_instance_backup_path }}"
+    state=directory
+    owner={{ instance_config.plone_daemon_user }}
+    group={{ instance_config.plone_group }}
+    mode=02770
+
+- name: Python eggs directory
+  file:
+    path="{{ plone_instance_var_path }}/.python-eggs"
+    state=directory
+    owner={{ instance_config.plone_daemon_user }}
+    group={{ instance_config.plone_group }}
+    mode=0700
+
+# Protect users who may have put zope-conf-additional in plone_client_extras,
+# which conflicts with our scheme for handling z2monitor setup.
+- name: Check plone_client_extras for problems
+  when: "'zope-conf-additional' in instance_config.plone_client_extras"
+  fail: msg="zope-conf-additional is not permitted in plone_client_extras. Use plone_zope_conf_additional instead."
+
+- name: Copy buildout template
+  when: not instance_config.plone_buildout_git_repo
+  template:
+    src=buildout.cfg.j2
+    dest={{ plone_instance_home }}/{{ instance_config.plone_buildout_cfg }}
+    owner={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+    backup=yes
+  register: instance_status
+
+- name: Determine if we have a requirements.txt file
+  stat:
+    path: "{{ plone_instance_home }}/requirements.txt"
+  register: requirements_txt
+
+- name: Download requirements file if requested and not already present
+  when: instance_config.plone_download_requirements_txt and not requirements_txt.stat.exists
+  get_url:
+    url=https://dist.plone.org/release/{{ instance_config.plone_version }}/requirements.txt
+    dest={{ plone_instance_home }}/requirements.txt
+    owner={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+    mode=0444
+  ignore_errors: yes
+
+- name: Determine if we have a requirements.txt file
+  stat:
+    path: "{{ plone_instance_home }}/requirements.txt"
+  register: requirements_txt
+
+- name: Copy requirements file from template
+  when: not requirements_txt.stat.exists
+  template:
+    src=requirements.txt.j2
+    dest={{ plone_instance_home }}/requirements.txt
+    owner={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+    backup=yes
+  register: requirements_status
+
+- name: Instance bin directory
+  file:
+    path={{ plone_instance_home }}/bin
+    state=directory
+    owner={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+    mode=0755
+
+- name: Determine if we already have bin/buildout
+  stat:
+    path: "{{ plone_instance_home }}/bin/buildout"
+  register: bin_buildout
+
+- block: # Plone < 5
+  - name: Python virtualenv (Plone < 5)
+    command: "{{ virtualenv_path | default() }}virtualenv --python={{ plone_python_path }} {{ instance_config.plone_target_path }}/python{{ plone_python_version }} \
+      creates={{ instance_config.plone_target_path }}/python{{ plone_python_version }}"
+
+  - name: Python requirements for this virtualenv
+    command: "{{ instance_config.plone_target_path }}/python{{ plone_python_version }}/bin/pip install -r {{ plone_instance_home }}/requirements.txt"
+
+  - name: symlink Python buildout to bin/buildout (Plone < 5)
+    file:
+      src: "{{ instance_config.plone_target_path }}/python{{ plone_python_version }}/bin/buildout"
+      dest: "{{ plone_instance_home }}/bin/buildout"
+      owner: "{{ instance_config.plone_buildout_user }}"
+      group: "{{ instance_config.plone_group }}"
+      state: link
+  when: instance_config.plone_version < '5.0' and not bin_buildout.stat.exists
+
+- block: # Plone >= 5
+  - name: Python virtualenv (Plone >= 5)
+    command: "{{ virtualenv_path | default() }}virtualenv --python={{ plone_python_path }} {{ plone_instance_home }}"
+    args:
+      creates: "{{ plone_instance_home }}/bin/python"
+    become_user: "{{ instance_config.plone_buildout_user }}"
+
+  - name: Python requirements for this virtualenv
+    command: "{{ plone_instance_home }}/bin/pip install -r {{ plone_instance_home }}/requirements.txt"
+    become_user: "{{ instance_config.plone_buildout_user }}"
+  when: instance_config.plone_version >= '5.0' and bin_buildout.stat.exists == False
+
+- name: Check to see if buildout has already run
+  stat: path={{ plone_instance_home }}/bin/client_reserved
+  register: buildout_status
+
+
+###################################
+# Run buildout
+
+- name: Copy files from the buildout extra dir
+  copy:
+    src="{{ instance_config.plone_buildout_extra_dir }}"
+    dest="{{ plone_instance_home }}"
+    force=yes
+    backup=yes
+    owner={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+  register: extra_dir_copy_result
+  when: instance_config.plone_buildout_extra_dir
+
+- name: "Run buildout - output goes to {{ plone_instance_home }}/buildout.log"
+  when: instance_config.plone_always_run_buildout or
+        instance_config.plone_autorun_buildout and
+        (instance_status.changed or requirements_status.changed or extra_dir_copy_result.changed or not
+        buildout_status.stat.exists)
+  shell: "bin/buildout -c {{ instance_config.plone_buildout_cfg }} > buildout.log 2>&1"
+  args:
+    chdir: "{{ plone_instance_home }}"
+  become_user: "{{ instance_config.plone_buildout_user }}"
+  register: ran_buildout
+
+- name: Everything in buildout cache is group-readable
+  file:
+    path="{{ instance_config.plone_target_path }}/buildout-cache"
+    mode="g+r"
+    recurse=yes
+  when: ran_buildout.changed
+
+- name: Look for existing database
+  when: instance_config.plone_create_site
+  stat: path="{{ plone_instance_var_path }}/filestorage/Data.fs"
+  register: db_status
+
+
+###################################
+# Supervisor setup
+
+- block:
+    - name: Superlance installed
+      when: plone_python_major_version != '3'
+      pip: name=superlance version=1.0 extra_args='--index-url=https://pypi.python.org/simple/'
+    
+    - name: Superlance installed
+      when: plone_python_major_version == '3'
+      pip: name=superlance version=1.0 extra_args='--index-url=https://pypi.python.org/simple/' executable=pip3
+  when: instance_config.plone_use_supervisor and instance_config.plone_hot_monitor == 'superlance' and instance_config.plone_client_max_memory != "0"
+
+
+- name: Supervisor process control setup
+  when: instance_config.plone_use_supervisor and ansible_os_family != 'Redhat'
+  template:
+    src=supervisor_task.j2
+    dest='{{ instance_config.supervisor_config_dir }}/{{ supervisor_instance_discriminator }}zeo.conf'
+    mode=644
+  register: supervisor_task_conf_debian
+
+- name: Supervisor process control setup
+  when: instance_config.plone_use_supervisor and ansible_os_family == 'RedHat'
+  template:
+    src=supervisor_task.j2
+    dest='{{ instance_config.supervisor_config_dir }}/{{ supervisor_instance_discriminator }}zeo.ini'
+    owner=root
+    group=root
+    mode=644
+  register: supervisor_task_conf_redhat
+
+- name: Ensure supervisord is running
+  when: instance_config.plone_use_supervisor
+  service: name={{ supervisor_service_name }} state=started
+
+# memmon processes have a special problem: the memory setting may have changed in the config file
+# without the addition/deletion of a part. 'reread' and 'restart' don't update the memory configuration.
+# Stopping, removing the part and updating does the trick.
+- name: Supervisor task list is updated and we have a memmon
+  when: instance_config.plone_use_supervisor and
+        instance_config.plone_client_max_memory != "0" and
+        supervisor_task_conf_debian is changed or supervisor_task_conf_redhat is changed
+  shell: 'supervisorctl stop {{ supervisor_instance_discriminator }}memmon; supervisorctl remove {{ supervisor_instance_discriminator }}memmon'
+  register: stop_remove
+
+- name: Supervisor task list is updated
+  when: instance_config.plone_use_supervisor and
+        supervisor_task_conf_debian is changed or supervisor_task_conf_redhat is changed
+  shell: 'supervisorctl update'
+
+- name: Supervisor zeoserver task is present
+  when: instance_config.plone_use_supervisor and instance_config.plone_install_zeoserver
+  supervisorctl:
+    name='{{ supervisor_instance_discriminator }}zeoserver'
+    state=present
+
+- name: Supervisor zeoclient tasks are present
+  when: instance_config.plone_use_supervisor
+  supervisorctl:
+    name='{{ supervisor_instance_discriminator }}zeoclient{{ item }}'
+    state=present
+  with_sequence: count={{ instance_config.plone_client_count }}
+
+- name: Supervisor zeoclients tasks are restarted
+  when: instance_config.plone_use_supervisor and
+        instance_config.plone_restart_after_buildout and
+        ran_buildout.changed
+  supervisorctl:
+    name={{ supervisor_instance_discriminator }}zeoclient{{ item }}
+    state=restarted
+  with_sequence: count={{ instance_config.plone_client_count }}
+
+- name: Ensure scripts directory
+  file:
+    path={{ plone_instance_home }}/scripts
+    state=directory
+
+
+##################################
+# Add Plone site
+
+- block:
+
+    - name: Pause to let ZODB settle a bit
+      pause: seconds=20
+
+    - name: Install site creation run script
+      template:
+        src=addPloneSite.py.j2
+        dest={{ plone_instance_home }}/scripts/addPloneSite.py
+        mode=0444
+
+    - name: Create initial Plone site
+      become_user: "{{ instance_config.plone_daemon_user }}"
+      command: bin/client_reserved run scripts/addPloneSite.py
+      args:
+        chdir: "{{ plone_instance_home }}"
+
+  when: instance_config.plone_use_supervisor and instance_config.plone_create_site and not db_status.stat.exists
+
+
+###################################
+# cron jobs
+
+# with_item is used with a constructed, single-element list to simplify
+# handling the default.
+
+- name: Pack cron job
+  when: instance_config.plone_pack_at
+  cron:
+    name="{{ instance_config.plone_instance_name }} Plone packing"
+    job='cd {{ plone_instance_home }} && bin/zeopack && echo "zeopack""_success for {{ instance_config.plone_instance_name }}"'
+    user={{ instance_config.plone_daemon_user }}
+    minute={{ item.minute }}
+    hour={{ item.hour }}
+    weekday={{ item.weekday }}
+  with_items: "{{ [instance_config.plone_pack_at] }}"
+
+
+- name: Backup cron job
+  when: instance_config.plone_backup_at
+  cron:
+    name="{{ instance_config.plone_instance_name }} Plone backup"
+    job='cd {{ plone_instance_home }} && bin/backup && echo "backup""_success for {{ instance_config.plone_instance_name }}"'
+    user={{ instance_config.plone_daemon_user }}
+    minute={{ item.minute }}
+    hour={{ item.hour }}
+    weekday={{ item.weekday }}
+  with_items: "{{ [instance_config.plone_backup_at] }}"

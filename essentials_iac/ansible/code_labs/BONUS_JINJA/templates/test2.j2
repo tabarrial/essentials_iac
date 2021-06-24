@@ -1,0 +1,6 @@
+## Recorre la variable y muestra el usuario si no es alberto.
+## loop.index es un contador
+{# for statement #}
+{% for myuser in users if not myuser == "alberto" %}
+Numero de usuario {{ loop.index }} - {{ myuser }}
+{% endfor %}

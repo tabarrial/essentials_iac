@@ -1,0 +1,7 @@
+---
+- name: PLAYBOOK rol1
+  hosts: aws
+  become: yes
+  roles:
+    - { role: rol1_mi_primer_rol, usuario: paco, package: mariadb, servicio: bbdd }
+    - { role: rol1_mi_primer_rol }

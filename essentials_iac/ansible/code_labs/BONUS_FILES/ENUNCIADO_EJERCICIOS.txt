@@ -1,0 +1,9 @@
+1. Crea un archivo vacío con el módulo file en /tmp/touch_file, que tenga permisos 0640, cuyo propietario sea el usuario formacion y pertenezca al grupo formacion.
+
+2. Utiliza el módulo lineinfile para añadir a tu archivo /etc/motd la línea "¡¡ Bienvenido a los laboratorios de Ansible Deep Dive !!"
+
+3. Utiliza el módulo blockinfile para añadir a tu archivo /etc/motd el bloque:
+"======================================="
+"Estas entrando en el sistema de <tu_nombre>"
+
+4. Recupera datos de tu directorio /tmp y muestralos por pantalla. (Modulo stat)

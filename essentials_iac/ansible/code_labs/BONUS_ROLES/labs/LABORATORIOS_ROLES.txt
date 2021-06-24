@@ -1,0 +1,20 @@
+1. Crear un rol que admita variables usuario y contrasena y cree usuarios en nuestro sistema. 
+Despues chequea el resultado de ese alta.
+Posteriormente deberás crear una playbook donde llamaremos a ese rol. 
+
+2. TRABAJAR CON ROLES DE TERCEROS COMBINADOS CON LOS MIOS
+2.1 Utiliza el rol docker de geerlinux para instalar docker en tu host (Descargar con ansible-galaxy)
+2.2 Despues crea un rol que instale una lista de paquetes que definirás por defecto en el propio rol. Llamale essentials_<tu_nombre>. 
+2.3 Los paquetes que debes instalar seran:
+  - ansible
+  - httpd
+  - vim
+  - git
+  - python-virtualenv
+  - python-pip
+2.4 Si la instalacion falla debe continuar con la playbook. Añade la clausula necesaria.
+2.5 Una vez tengas el rol crea una playbook que ejecute ambos roles.
+2.6 La playbook debe contener una tarea previa para instalar el repositorio epel-release
+2.7 Permite que utilizando la variable "estado" a nivel de rol, sea posible indicar el estado que queremos de nuestros paquetes (latest,absent,etc)
+2.8 Añade una tarea al final del rol essentials para mostrar el resultado de la instalacion de los paquetes
+2.9 Añade un paquete que no exista y verfica que el rol continua (si as puesto la clasula necesaria en el punto 2.4).

@@ -1,0 +1,6 @@
+---
+- name: PLAYBOOK rol0
+  hosts: aws
+  become: yes
+  roles:
+    - role: rol0_mi_cero_rol

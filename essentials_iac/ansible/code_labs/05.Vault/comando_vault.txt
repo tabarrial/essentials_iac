@@ -1,0 +1,1 @@
+ansible-playbook vault.yml --vault-password-file=vault-pass

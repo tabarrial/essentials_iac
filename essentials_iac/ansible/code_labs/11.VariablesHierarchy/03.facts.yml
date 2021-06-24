@@ -1,0 +1,17 @@
+---
+- name: Registro de fact
+  hosts: myServer
+  vars:
+    - variable_01: play_var
+  tasks:
+    - name: Print variable_01
+      debug:
+        var: variable_01
+
+    - name: Register fact
+      set_fact:
+        variable_01: fact_var
+
+    - name: Play var
+      debug:
+        var: variable_01

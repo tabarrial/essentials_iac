@@ -1,0 +1,22 @@
+1. Si realizamos la instalación sin definir el path se nos creara un directorio oculto en nuestro home
+ansible-galaxy install geerlingguy.docker
+ansible-galaxy list
+
+Nos mostrara directorios por defecto al no tener definido ningun rol
+/etc/ansible/roles
+
+2. O podemos pasarlo en tiempo de ejecucion
+ansible-galaxy list --roles-path roles
+
+3. Definimos el path con roles_path
+roles_path = roles:roles2
+
+4. En nuestra carpeta roles creamos un rol
+ansible-galaxy init rol0_mi_primer_rol
+
+5. Ver roles de sistema con el paquete
+yum install rhel-system-roles y explorarlos
+
+6. Instalar requirements
+
+7. Instalar colecciones

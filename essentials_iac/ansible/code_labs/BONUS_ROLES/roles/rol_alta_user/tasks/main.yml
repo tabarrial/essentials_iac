@@ -1,0 +1,13 @@
+---
+# tasks file for rol_alta_user
+- name: Crear usuario
+  user:
+    name: "{{ usuario }}"
+    password: "{{ pass | password_hash('sha512') }}"
+
+- name: Chequeo que ese usuario exista
+  shell: "cat /etc/passwd"
+  register: resultado
+
+- name: Muestro el resultado
+  debug: var=resultado

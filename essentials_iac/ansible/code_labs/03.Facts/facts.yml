@@ -1,0 +1,8 @@
+---
+- name: Module debug
+  hosts: myServer
+  tasks:
+    - name: show hostname
+      debug:
+        var: ansible_facts['hostname']
+...

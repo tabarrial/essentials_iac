@@ -1,0 +1,9 @@
+<H1>
+{% if greetings is defined %}
+    {{ greetings }},
+{% else %}
+Hi,
+{% endif %}
+my name is {{ ansible_facts['hostname'] }}
+and my IP address is {{ ansible_facts['default_ipv4']['address'] }}</H1>
+

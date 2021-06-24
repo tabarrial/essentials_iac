@@ -1,0 +1,7 @@
+---
+# tasks file for rol0_mi_primer_rol
+- name: Import task
+  import_tasks: task1.yml
+
+- name: Import task
+  import_tasks: task2.yml

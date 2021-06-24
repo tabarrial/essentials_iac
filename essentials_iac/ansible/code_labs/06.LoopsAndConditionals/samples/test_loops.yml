@@ -1,0 +1,16 @@
+---
+- name: Loop Register Test
+  gather_facts: no
+  hosts: myServer
+  tasks:
+    - name: Looping Echo Task
+      shell: "echo This is my item: {{ item }}"
+      loop:
+        - one
+        - two
+      register: echo_out
+
+    - name: Show echo_out variable
+      debug:
+        #var:  echo_out['results']
+        var: var_registro | json_query('results[*].stdout')

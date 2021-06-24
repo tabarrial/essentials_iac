@@ -1,0 +1,34 @@
+---
+
+# Debian-family dependencies
+
+- name: Update packages via apt
+  apt: upgrade=dist update_cache=yes
+
+- name: Ensure required python2 packages
+  when: plone_python_major_version == '2'
+  apt: pkg={{ plone_debian_python2_packages }} state=present
+
+- name: Ensure required python3 packages
+  when: plone_python_major_version == '3'
+  apt: pkg={{ plone_debian_python3_packages }} state=present
+
+- name: Ensure required packages
+  apt: pkg={{ plone_debian_packages }} state=present
+
+- name: Set virtualenv path
+  set_fact: virtualenv_path=/usr/bin/
+
+- name: Ensure supervisor is started
+  when: instance_config.plone_use_supervisor
+  service: name=supervisor state=started enabled=yes
+
+- name: Set supervisor service name
+  set_fact:
+    supervisor_service_name: supervisor
+
+# As of 2016-04-12, Xenial is not getting enabled by service play above
+- name: Set supervisor to start on boot in Xenial
+  when: instance_config.plone_use_supervisor and ansible_distribution_release == 'xenial'
+  shell: systemctl enable supervisor.service
+

@@ -1,0 +1,20 @@
+---
+interfaces:
+  Ethernet1:
+    description: eth20-if0
+    ipv4_address: 10.245.83.0/16
+  Ethernet2:
+    description: eth21-if0
+    ipv4_address: 10.245.86.0/16
+  Ethernet3:
+    description: eth22-if0
+    ipv4_address: 10.245.87.0/16
+  Ethernet4:
+    description: eth23-if0
+    ipv4_address: 10.245.22.0/16
+  Ethernet5:
+    description: eth24-if0
+    ipv4_address: 10.245.40.0/16
+  Ethernet6:
+    description: eth25-if0
+    ipv4_address: 10.245.50.0/16

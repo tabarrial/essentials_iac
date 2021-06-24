@@ -1,0 +1,3 @@
+{% for ifh, data in interfaces.items() if data.ipv4_address is defined -%}
+{{ ifh }} - {{ data.description }}: {{ data.ipv4_address }}
+{% endfor %}

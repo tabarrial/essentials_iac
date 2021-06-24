@@ -1,0 +1,38 @@
+---
+# tasks file for role-apache-directory
+- name: Set architecture and package name
+  set_fact:
+    arq: "{{ 'x86_64' if ansible_architecture == 'x86_64' else 'i386' }}"
+    pkg_name: apacheds-{{ ads_version }}
+    srv_name: apacheds-{{ ads_version | replace('-','_') }}
+  tags: facts
+
+- name: Set urls
+  set_fact:
+    rpm_url: "{{ mirror_url }}/directory/apacheds/dist/{{ ads_version }}/{{ pkg_name }}-{{ arq }}.rpm"
+  tags: facts
+
+- name: Install Java Runtime Environment
+  become: true
+  yum:
+    name: "{{ jre_package }}"
+    state: present
+
+- name: Download package
+  get_url:
+    url: "{{ rpm_url }}"
+    dest: "{{ temp_dir }}"
+
+- name: Install package
+  become: true
+  yum:
+    name: "{{ temp_dir }}/{{ pkg_name }}-{{ arq }}.rpm"
+    state: present
+
+- name: Enable and start service
+  become: true
+  service:
+    name: "{{ srv_name }}-default"
+    state: started
+    enabled: true
+...

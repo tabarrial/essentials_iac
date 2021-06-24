@@ -1,0 +1,17 @@
+---
+- name: PLAYBOOK importada
+  import_playbook: import_playbook.yml
+
+- name: TEST import
+  hosts: myServer
+  tasks:
+    - name: Mostrar texto1
+      debug:
+        msg: "klasdfkljasfdjlkklakljdfkljafds"
+
+    - name: Importar1
+      import_tasks: import1.yml
+
+    - name: Importar2
+      import_tasks: import2.yml
+...

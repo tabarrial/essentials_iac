@@ -1,0 +1,13 @@
+---
+hostname: router-w-none
+routing_protocol: none
+
+interfaces:
+  Loopback0:
+    ip: 10.0.0.2
+    mask: 32
+
+ospf:
+  pid: 1
+
+default_nh: 10.10.0.1

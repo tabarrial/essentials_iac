@@ -1,0 +1,4 @@
+- name: TAREA 2
+  debug: msg="Este es un debug para la tarea numero dos"
+  notify: Reinicia Firewalld
+  changed_when: true

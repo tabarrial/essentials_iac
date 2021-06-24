@@ -1,0 +1,17 @@
+---
+- name: Configurar facts
+  hosts: myServer
+  become: true
+  tasks:
+    - name: Crear directorio
+      file:
+        path: /etc/ansible/facts.d
+        state: directory
+    - name: Copy facts
+      copy:
+        src: "custom.fact"
+        dest: /etc/ansible/facts.d/custom.fact
+    - name: Show custom fact
+      debug:
+        var: ansible_facts['ansible_local']['custom']['packages']['db_package']
+...

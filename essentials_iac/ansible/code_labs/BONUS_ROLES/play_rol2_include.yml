@@ -1,0 +1,17 @@
+---
+- name: PLAYBOOK rol2 INCLUIR
+  hosts: aws
+  become: yes
+  tasks:
+    - name: Esta tarea esta en mi playbook, no en mi rol
+      debug: msg="Esta tarea esta en mi playbook, no en mi rol"
+
+    - name: Aqui realizo una operacion2
+      debug: msg="ESTA ES MI OPERACION2"
+
+    - name: Esta es mi operacion3
+      debug: msg="ESTA ES MI OPERACION3 => REALIZA CAMBIOS URGENTES SOBRE BBDD"
+
+    - name: Voy a incluir un rol
+      include_role:
+        name: rol2_mi_segundo_rol

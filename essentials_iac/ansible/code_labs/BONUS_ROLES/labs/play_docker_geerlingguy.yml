@@ -1,0 +1,12 @@
+---
+- name: PLAYBOOK para instalar docker con el rol de geerlingguy
+  hosts: myServer
+  become: yes
+  pre_tasks:
+    - name: Instalar epel-release
+      yum:
+        name: epel-release
+        state: present
+  roles:
+    - { role: geerlingguy.docker }
+    - { role: essentials_alberto, estado: present }

@@ -1,0 +1,4 @@
+---
+
+- name: Supervisor task list is updated
+  shell: "supervisorctl update"

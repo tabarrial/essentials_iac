@@ -1,0 +1,29 @@
+---
+- name: Import playbook template.yml
+  import_playbook: templates.yml
+
+- name: Deploy and start Apache HTTPD service
+  hosts: myServer
+  vars_files:
+    - vars/vars.yml
+  tasks:
+    - name: Required packages are installed and up to date
+      yum:
+        name:
+          - "{{ web_pkg }}"
+          - "{{ firewall_pkg }}"
+          - "{{ python_pkg }}"
+        state: latest
+
+    - name: The {{ firewall_service }} service is started and enabled
+      service:
+        name: "{{ firewall_service }}"
+        enabled: true
+        state: started
+
+    - name: The {{ web_service }} service is started and enabled
+      service:
+        name: "{{ web_service }}"
+        enabled: true
+        state: started
+...

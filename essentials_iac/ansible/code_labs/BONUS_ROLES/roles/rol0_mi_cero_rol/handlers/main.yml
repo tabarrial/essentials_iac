@@ -1,0 +1,7 @@
+---
+# handlers file for rol0_mi_primer_rol
+- name: Importa handler1
+  import_tasks: handler1.yml
+
+- name: Importa handler2
+  import_tasks: handler2.yml

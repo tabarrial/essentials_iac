@@ -1,0 +1,30 @@
+---
+- name: Configure myServer
+  hosts: myServer
+  become: true
+  tasks:
+    - name: Create user
+      user:
+        name: juan
+        uid: '4000'
+        state: present
+
+- name: Install webserver
+  hosts: myServer
+  become: true
+  tasks:
+    - name: Install httpd
+      package:
+        name: httpd
+        state: present
+
+- name: Init service
+  hosts: myServer
+  become: true
+  tasks:
+    - name: Started httpd
+      service: 
+        name: httpd
+        state: started
+
+...

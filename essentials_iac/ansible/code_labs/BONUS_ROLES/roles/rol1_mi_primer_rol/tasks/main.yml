@@ -1,0 +1,10 @@
+---
+# tasks file for rol1_mi_segundo_rol
+- name: Muestro la variable {{ usuario }}
+  debug: msg="La variable usuario es {{ usuario }}"
+
+- name: Muestro la variable {{ package }}
+  debug: msg="La variable paquete es {{ package }}"
+
+- name: Muestro la variable {{ servicio }}
+  debug: msg="La variable paquete es {{ servicio }}"

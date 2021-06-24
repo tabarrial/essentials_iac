@@ -1,0 +1,6 @@
+---
+- name: PLAYBOOK rol1
+  hosts: aws
+  become: yes
+  roles:
+    - { role: geerlingguy.ansible }

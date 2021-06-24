@@ -1,0 +1,5 @@
+---
+- name: TEST import
+  debug:
+    msg: "import2"
+...

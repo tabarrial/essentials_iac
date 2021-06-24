@@ -1,0 +1,8 @@
+---
+- name: Paralellism lab and time
+  hosts: all
+  serial: 1
+  tasks:
+    - name: this is a very difficult task
+      wait_for:
+        timeout: 5

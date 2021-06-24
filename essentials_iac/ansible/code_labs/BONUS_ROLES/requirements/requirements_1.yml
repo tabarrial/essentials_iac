@@ -1,0 +1,3 @@
+- name: essentials
+  src: https://github.com/zaiste/ansible-essentials
+  version: origin/master
