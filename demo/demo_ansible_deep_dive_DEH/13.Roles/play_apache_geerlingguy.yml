@@ -1,0 +1,10 @@
+---
+- name: PLAYBOOK para instalar apache con el rol de geerlingguy
+  hosts: aws
+  become: yes
+  vars:
+    apache_listen_port: 80
+    apache_vhosts:
+      - {servername: "ec2-13-51-159-101.eu-north-1.compute.amazonaws.com", documentroot: "/var/www/html/virtual1"}
+  roles:
+    - { role: geerlingguy.apache }

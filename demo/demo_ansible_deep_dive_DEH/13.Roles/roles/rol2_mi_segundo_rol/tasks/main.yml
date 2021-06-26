@@ -1,0 +1,12 @@
+---
+# tasks file for rol2_mi_segundo_rol
+- name: Debug TASK example para rol2_mi_segundo_rol
+  debug: msg="Este es un mensaje de mi primera tarea para el rol rol2_mi_segundo_rol"
+
+- name: Muestro un los paises
+  debug:
+    msg: "El pais que quiero mostrar es: {{ item }} "
+  loop: "{{ paises }}"
+
+- name: Esta tarea fallara porque el modulo no existe
+  jkladlfasdlf:

@@ -1,0 +1,8 @@
+---
+- name: TEST import
+  hosts: myServer
+  tasks:
+    - name: Mostrar IMPORT PLAYBOOK
+      debug:
+        msg: "Este texto esta importado"
+...

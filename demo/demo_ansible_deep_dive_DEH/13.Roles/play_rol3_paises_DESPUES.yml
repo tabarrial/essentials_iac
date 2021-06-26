@@ -1,0 +1,9 @@
+---
+- name: PLAYBOOK rol3
+  hosts: aws
+  roles:
+    - { role: rol3_paises }
+  tasks:
+    - name: ¿Cuando se ejecuta esta tarea ANTES o DESPUES?
+      debug: msg="¿Cuando se ejecuta esta tarea ANTES o DESPUES?"
+

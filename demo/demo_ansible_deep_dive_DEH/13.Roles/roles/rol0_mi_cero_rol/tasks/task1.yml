@@ -1,0 +1,4 @@
+- name: TAREA 1
+  debug: msg="Este es un debug para la tarea numero uno"
+  notify: Reinicia apache
+  changed_when: true

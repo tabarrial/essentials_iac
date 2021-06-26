@@ -1,0 +1,10 @@
+---
+- name: Deploy templates jinja2
+  hosts: myServer
+  tasks:
+    - name: Copy template
+      template:
+        src: templates/info.j2
+        dest: /tmp/info.txt
+...
+

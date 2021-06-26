@@ -1,0 +1,5 @@
+---
+# tasks file for rol_origin
+- name: TAREA ORIGEN
+  debug:
+    msg: "ESTE MENSAJE SIMPLE ES EL ORIGEN"

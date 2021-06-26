@@ -1,0 +1,8 @@
+---
+- name: install packages
+  package: name={{ essential_packages }} state={{ estado }} update_cache=yes
+  ignore_errors: yes
+  register: resultado_essential
+
+- name: Muestro resultado
+  debug: var=resultado_essential 

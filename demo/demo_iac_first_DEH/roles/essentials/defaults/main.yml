@@ -1,0 +1,7 @@
+---
+# defaults file for essentials
+essential_packages:
+  - ansible
+  - httpd
+  - vim
+  - git

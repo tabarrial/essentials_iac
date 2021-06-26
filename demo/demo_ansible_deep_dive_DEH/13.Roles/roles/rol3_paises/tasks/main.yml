@@ -1,0 +1,6 @@
+---
+- name: Muestro un los paises
+  debug:
+    msg: "El pais que quiero mostrar es: {{ item }} "
+  loop: "{{ paises }}"
+

@@ -1,0 +1,14 @@
+---
+- name: Variable en inventario 1
+  hosts: myServer
+  tasks:
+    - name: Group var
+      debug:
+        var: variable_01
+
+- name: Variable en inventario 2
+  hosts: myServer2
+  tasks:
+    - name: Host var
+      debug:
+        var: variable_01

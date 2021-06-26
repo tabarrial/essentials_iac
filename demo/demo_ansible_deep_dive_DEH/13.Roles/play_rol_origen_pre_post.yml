@@ -1,0 +1,30 @@
+- name: Playbook para ver el orden de ejecucion
+  hosts: aws
+
+  pre_tasks:
+    - debug:
+        msg: 'TAREA PREVIA'
+      notify: handler_test
+
+  roles:
+    - rol_origin
+
+  tasks:
+    - name: TAREA en la PLAYBOOK
+      debug:
+        msg: 'Primera TAREA DE LA PLAYBOOK'
+      notify: handler_test
+
+    - name: INCLUYO EL ROL una vez mas
+      include_role:
+        name: rol_origin
+
+  post_tasks:
+    - debug:
+        msg: 'ULTIMA TAREA DE LA PLAYBOOK'
+      notify: handler_test
+
+  handlers:
+    - name: handler_test
+      debug:
+        msg: "EJECUTO MI HANDLER"

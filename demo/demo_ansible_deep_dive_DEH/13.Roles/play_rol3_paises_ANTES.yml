@@ -1,0 +1,11 @@
+---
+- name: PLAYBOOK rol3
+  hosts: aws
+  tasks:
+    - name: ¿Cuando se ejecuta esta tarea ANTES o DESPUES?
+      debug: msg="¿Cuando se ejecuta esta tarea ANTES o DESPUES?"
+
+    - name: Importo/incluyo el rol
+      include_role:
+        name: rol3_paises
+

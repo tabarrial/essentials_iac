@@ -1,0 +1,8 @@
+---
+- hosts: myServer
+  gather_facts: no
+
+  tasks:
+    - debug:
+    - include_role:
+        name: example

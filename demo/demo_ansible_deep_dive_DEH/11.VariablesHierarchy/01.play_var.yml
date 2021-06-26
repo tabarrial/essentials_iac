@@ -1,0 +1,9 @@
+---
+- name: Variable en playbook
+  hosts: myServer
+  vars:
+    variable_01: play_var
+  tasks:
+    - name: Play var
+      debug:
+        var: variable_01

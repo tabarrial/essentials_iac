@@ -1,0 +1,5 @@
+---
+# defaults file for rol1_mi_segundo_rol
+usuario: user
+package: paquete_default
+servicio: servicio_default

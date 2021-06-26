@@ -1,0 +1,8 @@
+---
+- name: PLAYBOOK rol1
+  hosts: aws
+  become: yes
+  vars:
+    - estado: present
+  roles:
+    - { role: essentials }

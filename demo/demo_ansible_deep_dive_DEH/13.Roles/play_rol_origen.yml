@@ -1,0 +1,5 @@
+---
+- name: PLAYBOOK ORIGEN
+  hosts: aws
+  roles:
+    - role: rol_origin
